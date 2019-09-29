@@ -81,8 +81,7 @@ a_star <- function(start_pos, goal, roads) {
   
   # Initial frontier is immediately expanded
   h_start = manhattan_distance(start_pos, goal)
-  node_name <- paste(start_pos, collapse = '')
-  start_node <- list(name = node_name, pos = start_pos, cost = 0, h = h_start, score = h_start, path = list())
+  start_node <- list(pos = start_pos, cost = 0, h = h_start, score = h_start, path = list())
   
   #Initial node, node position = start_node, cost 0,
   # h = h_start, path is empty
@@ -92,8 +91,6 @@ a_star <- function(start_pos, goal, roads) {
     
     expanded_x <- expanded$pos[1]
     expanded_y <- expanded$pos[2]
-    frontier_names <- sapply(frontier,'[[', 'pos')
-    print(frontier_names)
     
     #### Add left neighbor to frontier #####
     pos <- c(expanded_x - 1, expanded_y)
@@ -101,9 +98,8 @@ a_star <- function(start_pos, goal, roads) {
     y <- pos[2]
     if( x > 0) {
       edge_cost <- h_roads[x, y]
-      frontier <- update_frontier(pos, edge_cost, expanded, frontier, frontier_names, goal)
-    
-      }
+      frontier <- update_frontier(pos, edge_cost, expanded, frontier, goal)
+    }
     #### Add right neighbor to frontier #####
     
     pos <- c(expanded_x + 1, expanded_y)
@@ -111,9 +107,8 @@ a_star <- function(start_pos, goal, roads) {
     y <- pos[2]
     if( x-1 < 10) {
       edge_cost <- h_roads[x - 1, y]
-      frontier <- update_frontier(pos, edge_cost, expanded, frontier, frontier_names, goal)
-      
-      }
+      frontier <- update_frontier(pos, edge_cost, expanded, frontier, goal)
+    }
     
     #### Add down neighbor to frontier #####
     pos <- c(expanded_x, expanded_y - 1)
@@ -121,18 +116,16 @@ a_star <- function(start_pos, goal, roads) {
     y <- pos[2]
     if( y > 0) {
       edge_cost <- v_roads[x, y]
-      frontier <- update_frontier(pos, edge_cost, expanded, frontier, frontier_names, goal)
-      
-      }
+      frontier <- update_frontier(pos, edge_cost, expanded, frontier, goal)
+    }
     #### Add up neighbor to frontier #####
     pos <- c(expanded_x, expanded_y + 1)
     x <- pos[1]
     y <- pos[2]
     if( y-1 < 10) {
       edge_cost <- v_roads[x, y - 1]
-      frontier <- update_frontier(pos, edge_cost, expanded, frontier, frontier_names, goal)
-      
-      }
+      frontier <- update_frontier(pos, edge_cost, expanded, frontier, goal)
+    }
     
     #### Expand the node with least score #### 
     scores <- sapply(frontier, function(item)item$score)
@@ -146,20 +139,18 @@ a_star <- function(start_pos, goal, roads) {
         min_h <- min(frontier[[i]]$h, min_h)
       }
       best_index <- best_index[which(best_index == min_h)]
-
+      
     }
     
     if(length(best_index) > 1) {
       best_index <- best_index[1]
-      }
+    }
     
     
     expanded <- frontier[[best_index]]
     frontier <- frontier[-best_index]
     
   } # End of while
-  
-
   
   if(length(expanded$path) < 2){
     
@@ -203,7 +194,7 @@ a_star <- function(start_pos, goal, roads) {
 }
 
 
-update_frontier <- function(node_pos, edge_cost, expanded_node, frontier, frontier_names, goal) {
+update_frontier <- function(node_pos, edge_cost, expanded_node, frontier, goal) {
   node_x <- node_pos[1]
   node_y <- node_pos[2]
   
@@ -218,35 +209,44 @@ update_frontier <- function(node_pos, edge_cost, expanded_node, frontier, fronti
   } else {
     path <- expanded_node$path
   }
-  node_name <- paste(node_pos, collapse = '')
   
   
+  index <- NULL
   
-  index <- which(frontier_names == node_name)
-  
-   # Node already exists in frontier
-  if(length(index) > 0) {
-    
-      old_score <- frontier[[index]]$score
-      
-      
-      # New path is better
-      if(score < old_score){
-        frontier[[index]]$score <- score
-        frontier[[index]]$path <- path
-        
-        return(frontier)
-        
-      } else {
-        # Return frontier unchanged
-        return(frontier)
-      
+  if(length(frontier) > 0) {
+    for(i in 1:length(frontier)) {
+      curr_pos <- frontier[[i]]$pos
+      if(curr_pos[1] == node_x && curr_pos[2] == node_y) {
+        index <- i
       }
+    }
   }
   
-    # Node does not exist in frontier
-    neighbor <- list(name = node_name, pos = node_pos, cost = cost, h = h, score = score, path = path)
-    frontier <- append(frontier, list(neighbor))
-    return(frontier)
-  
+  # Node already exists in frontier
+
+  if(!is.null(index)) {
+    
+    old_score <- frontier[[index]]$score
+    
+    
+    # New path is better
+    if(score < old_score){
+      frontier[[index]]$score <- score
+      frontier[[index]]$path <- path
+      frontier[[index]]$cost <- cost
+      frontier[[index]]$h <- h
+      
+      return(frontier)
+      
+    } else {
+      # Return frontier unchanged
+      return(frontier)
+      
+    }
   }
+  # Node does not exist in frontier
+  neighbor <- list(pos = node_pos, cost = cost, h = h, score = score, path = path)
+  frontier <- append(frontier, list(neighbor))
+  return(frontier)
+  
+}
