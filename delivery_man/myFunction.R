@@ -1,6 +1,4 @@
-setwd("C:/Users/mathi/Documents/uni_courses/AI_2019/code/delivery_man")
-
-myFunction2 <- function (roads, car, packages) { 
+myFunction <- function (roads, car, packages) { 
   
   # Initialise variables
   nextMove = 0
@@ -131,22 +129,6 @@ a_star <- function(start_pos, goal, roads) {
     scores <- sapply(frontier, function(item)item$score)
     best_index <- which.min(scores)
     
-    # Arbitralily break ties
-    if(length(best_index) > 1) {
-      min_h <- 2000
-      for(i in best_index){
-        
-        min_h <- min(frontier[[i]]$h, min_h)
-      }
-      best_index <- best_index[which(best_index == min_h)]
-      
-    }
-    
-    if(length(best_index) > 1) {
-      best_index <- best_index[1]
-    }
-    
-    
     expanded <- frontier[[best_index]]
     frontier <- frontier[-best_index]
     
@@ -223,7 +205,7 @@ update_frontier <- function(node_pos, edge_cost, expanded_node, frontier, goal) 
   }
   
   # Node already exists in frontier
-
+  
   if(!is.null(index)) {
     
     old_score <- frontier[[index]]$score
