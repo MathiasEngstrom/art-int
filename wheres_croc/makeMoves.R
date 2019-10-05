@@ -79,15 +79,26 @@ makeMoves <- function (moveInfo, readings, positions, edges, probs) {
   
 
   highest_prob <- which.max(s1)
-
+  
+  
   move <- moveInfo$mem$path_matrix[ranger, highest_prob]
-
+  move2 <- 0
+  
+  
+  
+  if(move != 0){
+    move2 <- moveInfo$mem$path_matrix[move, highest_prob]
+      
+      if(s1[move2] > mean(s1) && move2 != 0){
+      move2 <- 0
+    }
+  }
   
   # Update moveInfo and return
-  moveInfo$moves <- c(move, 0)
+  moveInfo$moves <- c(move, move2)
   moveInfo$mem$state <- s1
   
-  return(moveInfo)
+    return(moveInfo)
 }
 
 
