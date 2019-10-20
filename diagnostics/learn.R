@@ -29,28 +29,37 @@ learn <- function(hist) {
   
   # P(Sm = 1) , P(Sm = 0)
   P_sm <- matrix(0, 1, 2)
-  n_sm_1 <- length(which(sm == 0)) + 1
-  P_sm[1] <- n_sm_1/(N_train + 2)
+  n_sm_0 <- length(which(sm == 0)) + 1
+  P_sm[1] <- n_sm_0/(N_train + 2)
   P_sm[2] <- 1 - P_sm[1]
   
-  # P(Te = X| Pn = 1) , P(Te = X| Pn = 0) 
-  P_te <- function(temp, te. = te) {
-
-    # Pn = 1
-    pn_1_idx <- which(pn == 1)
-    te_pn_1_mean <- mean(te.[pn_1_idx])
-    te_pn_1_std <- sd(te[pn_1_idx])
-    D_te_pn_1 <- dnorm(temp, te_pn_1_mean, te_pn_1_std)
   
+  
+  # P(Te = X| Pn = 1) , P(Te = X| Pn = 0) 
+  
+  # Pn = 0
+  pn_0_idx <- which(pn == 0)
+  te_pn_0_mean <- mean(te[pn_0_idx])
+  te_pn_0_std <- sd(te[pn_0_idx])
+  
+  # Pn = 1
+  pn_1_idx <- which(pn == 1)
+  te_pn_1_mean <- mean(te[pn_1_idx])
+  te_pn_1_std <- sd(te[pn_1_idx])
+  
+  P_te <- function(temp, pn0_mean = te_pn_0_mean, pn0_std = te_pn_0_std,
+                   pn1_mean = te_pn_1_mean, pn1_std = te_pn_1_std) {
+
     # Pn = 0
-    pn_0_idx <- which(pn == 0)
-    te_pn_0_mean <- mean(te.[pn_0_idx])
-    te_pn_0_std <- sd(te[pn_0_idx])
-    D_te_pn_0 <- dnorm(temp, te_pn_0_mean, te_pn_0_std)
+    D_te_pn_0 <- dnorm(temp, pn0_mean, pn0_std)
     
-    # Convert densities to probabilities (?)
+    
+    # Pn = 1
+    D_te_pn_1 <- dnorm(temp, pn1_mean, pn1_std)
+    
+    # Convert densities to probabilities
     P_te_pn_0 <- D_te_pn_0/(D_te_pn_1 + D_te_pn_0)
-    P_te_pn_1 <- D_te_pn_1/(D_te_pn_1 + D_te_pn_0)
+    P_te_pn_1 <- 1 - P_te_pn_0
     
     
     return(c(P_te_pn_0, P_te_pn_1))  
@@ -108,10 +117,10 @@ learn <- function(hist) {
     for(j in 1:2){
       for(k in 1:2){
         for(l in 1:2){
-          xr_idx <- which(xr == i-1) # index 1 in array
-          pn_idx <- which(pn == j-1) # index 2 in array
-          tb_idx <- which(tb == k-1) # index 3 in array
-          lc_idx <- which(lc == l-1) # index 4 in array
+          xr_idx <- which(xr == i-1) # index position 1 in array
+          pn_idx <- which(pn == j-1) # index position 2 in array
+          tb_idx <- which(tb == k-1) # index position 3 in array
+          lc_idx <- which(lc == l-1) # index position 4 in array
         
           intersection <- intersect(pn_idx, intersect(tb_idx, lc_idx))
           
